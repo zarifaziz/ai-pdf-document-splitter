@@ -24,7 +24,7 @@ class TextExtractor:
         if not os.path.exists(self.temp_image_dir):
             os.makedirs(self.temp_image_dir)
 
-    def __call__(self, file_path: str) -> str:
+    def run(self, file_path: str) -> str:
         """
         Extracts text from the specified file path.
 
@@ -40,6 +40,15 @@ class TextExtractor:
         """
         text = self.extract_text(file_path)
         return text
+
+    @classmethod
+    def convert_pdf_to_text(cls, pdf_path: str) -> None:
+        text_extractor = cls()
+        text = text_extractor.run(pdf_path)
+        txt_filename = os.path.splitext(os.path.basename(pdf_path))[0] + ".txt"
+        txt_path = os.path.join(settings.TXT_OUTPUT_DIR, txt_filename)
+        with open(txt_path, "w") as txt_file:
+            txt_file.write(text)
 
     def extract_text(self, file_path: str) -> str:
         """

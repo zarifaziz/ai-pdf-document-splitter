@@ -14,8 +14,24 @@ This project implements an intelligent PDF document splitter that automatically 
 
 1. Clone this repository:
 
+```
 git clone https://github.com/zarifaziz/ai-pdf-document-splitter.git
 cd ai-pdf-document-splitter
+```
+
+2. Install dependencies using Poetry:
+```
+poetry install
+```
+
+
+## Running the Application
+
+To run the application, use the following command:
+
+```
+python -m src.splitter.main
+```
 
 ## Limitations and Future Work
 
