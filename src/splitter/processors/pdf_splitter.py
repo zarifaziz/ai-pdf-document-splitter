@@ -2,10 +2,10 @@ import os
 
 from pypdf import PdfReader, PdfWriter
 
-from .settings import settings
+from ..settings import settings
 
 
-class PdfSplitter:
+class PDFSplitter:
     def __init__(self, input_file):
         self.input_file = input_file
         self.file_name = os.path.splitext(os.path.basename(input_file))[0]
@@ -26,5 +26,5 @@ class PdfSplitter:
 
 
 if __name__ == "__main__":
-    splitter = PdfSplitter("input.pdf")
+    splitter = PDFSplitter("input.pdf")
     splitter.run()

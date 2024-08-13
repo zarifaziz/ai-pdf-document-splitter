@@ -1,6 +1,6 @@
 import os
-import re
 import uuid
+from multiprocessing import Pool
 from pathlib import Path
 from typing import List
 
@@ -9,7 +9,8 @@ import numpy as np
 import pytesseract
 from pdf2image import convert_from_path
 
-from .settings import settings
+from ..settings import settings
+from .pdf_splitter import PDFSplitter
 
 
 class TextExtractor:
@@ -18,39 +19,55 @@ class TextExtractor:
     """
 
     def __init__(self, delete_temp_images: bool = True):
-        """Initializes the DocProcessor with a temporary image file directory."""
+        """Initializes the TextExtractor with a temporary image file directory."""
         self.temp_image_dir = str(settings.TEMP_IMAGE_DIR)
         self.delete_temp_images = delete_temp_images
-        if not os.path.exists(self.temp_image_dir):
-            os.makedirs(self.temp_image_dir)
+        os.makedirs(self.temp_image_dir, exist_ok=True)
+        os.makedirs(settings.TXT_OUTPUT_DIR, exist_ok=True)
 
-    def run(self, file_path: str) -> str:
+    def extract_texts_from_pdfs(self, input_file: str) -> None:
         """
-        Extracts text from the specified file path.
+        Splits the input PDF into individual pages and extracts text from each page.
 
         Parameters
         ----------
-        file_path : str
-            The path to the file or directory from which to extract text.
+        input_file : str
+            The path to the input PDF file.
+        """
+        splitter = PDFSplitter(input_file)
+        splitter.run()
+        pdf_files: List[str] = [
+            os.path.join(settings.TEMP_PDF_PAGES_DIR, f)
+            for f in os.listdir(settings.TEMP_PDF_PAGES_DIR)
+            if f.endswith(".pdf")
+        ]
+        with Pool() as pool:
+            pool.starmap(
+                TextExtractor.convert_pdf_to_text,
+                [(pdf_file,) for pdf_file in pdf_files],
+            )
+
+    def read_extracted_texts(self) -> List[str]:
+        """
+        Reads the extracted text files from the output directory.
 
         Returns
         -------
-        str
-            The extracted text.
+        List[str]
+            A list of strings, each containing the text from a single page.
         """
-        text = self.extract_text(file_path)
-        return text
+        text_files = [
+            os.path.join(settings.TXT_OUTPUT_DIR, f)
+            for f in os.listdir(settings.TXT_OUTPUT_DIR)
+            if f.endswith(".txt")
+        ]
+        texts = []
+        for text_file in text_files:
+            with open(text_file, "r") as file:
+                texts.append(file.read())
+        return texts
 
-    @classmethod
-    def convert_pdf_to_text(cls, pdf_path: str) -> None:
-        text_extractor = cls()
-        text = text_extractor.run(pdf_path)
-        txt_filename = os.path.splitext(os.path.basename(pdf_path))[0] + ".txt"
-        txt_path = os.path.join(settings.TXT_OUTPUT_DIR, txt_filename)
-        with open(txt_path, "w") as txt_file:
-            txt_file.write(text)
-
-    def extract_text(self, file_path: str) -> str:
+    def extract_text_from_file(self, file_path: str) -> str:
         """
         Extracts text from files in the specified directory or from a single file.
 
@@ -72,8 +89,8 @@ class TextExtractor:
                     or file.endswith(".jpg")
                     or file.endswith(".png")
                 ):
-                    new_text = self.get_text(
-                        self.file_to_image(Path(file_path, file).as_posix())
+                    new_text = self.extract_text_from_images(
+                        self.convert_file_to_images(Path(file_path, file).as_posix())
                     )
                     if new_text:
                         text += new_text + "\n"
@@ -82,10 +99,10 @@ class TextExtractor:
             or file_path.endswith(".jpg")
             or file_path.endswith(".png")
         ):
-            text = self.get_text(self.file_to_image(file_path))
+            text = self.extract_text_from_images(self.convert_file_to_images(file_path))
         return text
 
-    def get_text(self, image_list: List[np.ndarray]) -> str:
+    def extract_text_from_images(self, image_list: List[np.ndarray]) -> str:
         """
         Extracts text from a list of images.
 
@@ -102,13 +119,13 @@ class TextExtractor:
         text = []
         for image in image_list:
             words = pytesseract.image_to_string(image, config="--psm 1 --oem 1")
-            words = self.clean_text(words)
+            words = self.clean_extracted_text(words)
             text.append(words)
         text = [x for x in text if len(x) > 1]
         text = "\n".join(text)
         return text
 
-    def file_to_image(self, file_path: str) -> List[np.ndarray]:
+    def convert_file_to_images(self, file_path: str) -> List[np.ndarray]:
         """
         Converts files to images for text extraction.
 
@@ -159,10 +176,9 @@ class TextExtractor:
         image = image[..., ::-1]  # Convert BGR to RGB
         return image
 
-    def clean_text(self, words: str) -> str:
+    def clean_extracted_text(self, words: str) -> str:
         """
         Cleans and formats extracted text.
-        NOT IMPLEMENTED FOR MVP.
 
         Parameters
         ----------
@@ -175,3 +191,20 @@ class TextExtractor:
             The cleaned and formatted text.
         """
         return words
+
+    @classmethod
+    def convert_pdf_to_text(cls, pdf_path: str) -> None:
+        """
+        Converts a PDF file to text and saves it to the output directory.
+
+        Parameters
+        ----------
+        pdf_path : str
+            The path to the PDF file to convert.
+        """
+        text_extractor = cls()
+        text = text_extractor.extract_text_from_file(pdf_path)
+        txt_filename = os.path.splitext(os.path.basename(pdf_path))[0] + ".txt"
+        txt_path = os.path.join(settings.TXT_OUTPUT_DIR, txt_filename)
+        with open(txt_path, "w") as txt_file:
+            txt_file.write(text)

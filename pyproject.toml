@@ -16,11 +16,14 @@ pytesseract = "^0.3.10"
 opencv-python = "^4.10.0.84"
 openai = "^1.40.3"
 scikit-learn = "^1.5.1"
+matplotlib = "^3.9.2"
+seaborn = "^0.13.2"
 
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
 isort = "^5.13.2"
+ipykernel = "^6.29.5"
 
 [build-system]
 requires = ["poetry-core"]
