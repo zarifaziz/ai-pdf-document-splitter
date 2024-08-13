@@ -30,7 +30,7 @@ poetry install
 To run the application, use the following command:
 
 ```
-python -m src.splitter.main
+python -m src.splitter.main --input-file path/to/your/input.pdf --clear-cache
 ```
 
 ## Limitations and Future Work

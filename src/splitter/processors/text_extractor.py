@@ -10,7 +10,7 @@ import pytesseract
 from pdf2image import convert_from_path
 
 from ..settings import settings
-from .pdf_splitter import PDFSplitter
+from .pdf_processor import PDFSplitter
 
 
 class TextExtractor:

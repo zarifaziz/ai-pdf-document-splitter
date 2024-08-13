@@ -62,7 +62,9 @@ def assign_topics_to_documents(
         try:
             if strategy == "random_sample":
                 # Randomly select up to 5 pages from each document
-                selected_pages = random.sample(document.pages, min(5, len(document.pages)))
+                selected_pages = random.sample(
+                    document.pages, min(5, len(document.pages))
+                )
                 page_texts = [texts[page.page_number] for page in selected_pages]
                 combined_text = " ".join(page_texts)
                 document.topic_name = generate_topic(combined_text)

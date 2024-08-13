@@ -51,8 +51,8 @@ def post_process_labels(labels: np.ndarray, page_gap_threshold: int) -> np.ndarr
 
 def perform_clustering(
     embeddings: List[np.ndarray],
-    alpha: float = 0.9,
-    distance_threshold: float = 2.1,
+    alpha: float = 0.85,
+    distance_threshold: float = 2.0,
     page_gap_threshold: int = 1,
 ) -> np.ndarray:
     """
@@ -60,8 +60,8 @@ def perform_clustering(
 
     Args:
         embeddings (List[np.ndarray]): List of embeddings to cluster.
-        alpha (float, optional): Weighting factor between embedding distance and page distance. Defaults to 0.9.
-        distance_threshold (float, optional): Threshold to apply when forming flat clusters. Defaults to 1.5.
+        alpha (float, optional): Weighting factor between embedding distance and page distance. Defaults to 0.85.
+        distance_threshold (float, optional): Threshold to apply when forming flat clusters. Defaults to 2.0.
         page_gap_threshold (int, optional): Threshold for the page gap to split clusters. Defaults to 1.
 
     Returns:
