@@ -32,7 +32,8 @@ def main():
             return
 
         if st.button("Run Pipeline"):
-            st.info("Running the pipeline, please wait...")
+            st.info("Running the pipeline to extract text, generate embeddings, and cluster documents.")
+            st.info("This may take a few minutes, please wait...")
             progress_bar = st.progress(0)
             
             pipeline = Pipeline(temp_file_path)
@@ -42,7 +43,7 @@ def main():
                 time.sleep(0.01)
                 progress_bar.progress(i + 1)
 
-            st.success("Pipeline executed successfully!")
+            st.success("Pipeline executed successfully! The PDF has been split into individual documents.")
 
             # Display and provide download links for the output documents
             for output_file in output_files:

@@ -56,7 +56,7 @@ class Pipeline:
         return output_files
 
     def clear_cache(self) -> None:
-        """Clear the temporary and output directories."""
+        """Clear the temporary and output directories and delete .pkl files from data/."""
         directories_to_clear = [
             settings.TEMP_PDF_PAGES_DIR,
             settings.TEMP_IMAGE_DIR,
@@ -71,6 +71,15 @@ class Pipeline:
                         os.unlink(file_path)
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
+                except Exception as e:
+                    logger.error(f"Failed to delete {file_path}. Reason: {e}")
+
+        data_directory = "data"
+        for filename in os.listdir(data_directory):
+            if filename.endswith(".pkl"):
+                file_path = os.path.join(data_directory, filename)
+                try:
+                    os.unlink(file_path)
                 except Exception as e:
                     logger.error(f"Failed to delete {file_path}. Reason: {e}")
 

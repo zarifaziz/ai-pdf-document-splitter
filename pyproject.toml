@@ -27,6 +27,7 @@ loguru = "^0.7.2"
 black = "^24.8.0"
 isort = "^5.13.2"
 ipykernel = "^6.29.5"
+ipdb = "^0.13.13"
 
 [build-system]
 requires = ["poetry-core"]

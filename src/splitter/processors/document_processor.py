@@ -41,6 +41,7 @@ def create_documents(
 ) -> Dict[int, Document]:
     documents = {}
     for page_info, cluster in zip(page_infos, clusters):
+        cluster = int(cluster)
         if cluster not in documents:
             documents[cluster] = Document(
                 id=str(uuid.uuid4()),

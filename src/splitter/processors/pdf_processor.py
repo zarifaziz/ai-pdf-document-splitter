@@ -17,8 +17,11 @@ class PDFMerger:
     def merge_pages(self, page_numbers: List[int], output_file: str):
         """Merge specified pages into a single output file."""
         writer = PdfWriter()
-        for page_number in page_numbers:
-            writer.add_page(self.reader.pages[page_number])
+        try:
+            for page_number in page_numbers:
+                writer.add_page(self.reader.pages[page_number])
+        except IndexError as e:
+            raise IndexError(f"Page number {page_number} is out of range for the input file.") from e
 
         with open(output_file, "wb") as outfile:
             writer.write(outfile)
