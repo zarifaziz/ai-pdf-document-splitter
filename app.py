@@ -8,9 +8,6 @@ def main():
     st.set_page_config(page_title="AI Automated PDF Splitter", layout="wide")
     st.title("AI Automated PDF Splitter")
 
-    st.sidebar.header("Settings")
-    clear_cache = st.sidebar.checkbox("Clear Cache", value=False)
-
     st.write("""
     ### Instructions
     1. Upload a PDF file.
@@ -37,7 +34,7 @@ def main():
             progress_bar = st.progress(0)
             
             pipeline = Pipeline(temp_file_path)
-            output_files = pipeline.run(clear_cache=clear_cache)
+            output_files = pipeline.run()
             
             for i in range(100):
                 time.sleep(0.01)

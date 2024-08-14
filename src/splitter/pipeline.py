@@ -20,7 +20,7 @@ class Pipeline:
         self.input_file = input_file
         self.text_extractor = TextExtractor()
 
-    def run(self, clear_cache: bool = False) -> List[str]:
+    def run(self, clear_cache: bool = True) -> List[str]:
         """Execute the entire pipeline process."""
         if clear_cache:
             logger.info("Clearing cache.")
