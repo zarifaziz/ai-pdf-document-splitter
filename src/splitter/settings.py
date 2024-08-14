@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     TXT_OUTPUT_DIR: str = "data/txt_pages"
     OUTPUT_DOCS_DIR: str = "data/output_docs"
 
-    EMBEDDINGS_FILE: str = "data/embeddings.pkl"
+    EMBEDDINGS_FILE_SUFFIX: str = "embeddings.pkl"
 
     class Config:
         env_file = ".env"

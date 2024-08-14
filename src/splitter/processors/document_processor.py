@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from ..domain_models import Document, PageInfo
 from ..settings import settings
+from loguru import logger
 
 openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -76,5 +77,5 @@ def assign_topics_to_documents(
             else:
                 raise ValueError(f"Unknown strategy: {strategy}")
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            logger.error(f"An unexpected error occurred: {e}")
     return documents_dict

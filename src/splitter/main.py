@@ -1,8 +1,10 @@
 import typer
+
 from .pipeline import Pipeline
 from .settings import settings
 
 app = typer.Typer()
+
 
 @app.command()
 def run_pipeline(input_file: str = settings.PDF_INPUT_PATH, clear_cache: bool = False):
@@ -15,6 +17,7 @@ def run_pipeline(input_file: str = settings.PDF_INPUT_PATH, clear_cache: bool = 
     """
     pipeline = Pipeline(input_file)
     pipeline.run(clear_cache=clear_cache)
+
 
 if __name__ == "__main__":
     app()
