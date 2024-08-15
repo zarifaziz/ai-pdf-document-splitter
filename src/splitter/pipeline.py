@@ -64,24 +64,30 @@ class Pipeline:
             settings.OUTPUT_DOCS_DIR,
         ]
         for directory in directories_to_clear:
-            for filename in os.listdir(directory):
-                file_path = os.path.join(directory, filename)
-                try:
-                    if os.path.isfile(file_path) or os.path.islink(file_path):
-                        os.unlink(file_path)
-                    elif os.path.isdir(file_path):
-                        shutil.rmtree(file_path)
-                except Exception as e:
-                    logger.error(f"Failed to delete {file_path}. Reason: {e}")
+            if os.path.exists(directory):
+                for filename in os.listdir(directory):
+                    file_path = os.path.join(directory, filename)
+                    try:
+                        if os.path.isfile(file_path) or os.path.islink(file_path):
+                            os.unlink(file_path)
+                        elif os.path.isdir(file_path):
+                            shutil.rmtree(file_path)
+                    except Exception as e:
+                        logger.error(f"Failed to delete {file_path}. Reason: {e}")
+            else:
+                logger.warning(f"Directory {directory} does not exist.")
 
         data_directory = "data"
-        for filename in os.listdir(data_directory):
-            if filename.endswith(".pkl"):
-                file_path = os.path.join(data_directory, filename)
-                try:
-                    os.unlink(file_path)
-                except Exception as e:
-                    logger.error(f"Failed to delete {file_path}. Reason: {e}")
+        if os.path.exists(data_directory):
+            for filename in os.listdir(data_directory):
+                if filename.endswith(".pkl"):
+                    file_path = os.path.join(data_directory, filename)
+                    try:
+                        os.unlink(file_path)
+                    except Exception as e:
+                        logger.error(f"Failed to delete {file_path}. Reason: {e}")
+        else:
+            logger.warning(f"Directory {data_directory} does not exist.")
 
     def output_pdf_split_results(self, documents_dict: Dict[int, Document]) -> None:
         """Print the clustering results for each document."""
