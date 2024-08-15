@@ -77,7 +77,7 @@ The task is framed as an unsupervised clustering problem, using agglomerative cl
 
 ### 4. Generating Group Topics
 
-To generate topics/filenames for each split document, we use OpenAI's LLM, which is based on Masked Language Modelling (MLM). This model is effective for topic generation based on context.
+To generate topics/filenames for each split document, we use OpenAI's GPT-4o-mini LLM, which is trained with "Next Token Prediction". This model is effective for topic generation based on context. Generating a topic is a simple task so we went with a smaller, cheaper model.
 
 ## Future Work
 
