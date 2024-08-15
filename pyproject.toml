@@ -21,6 +21,8 @@ typer = "^0.12.3"
 streamlit = "^1.37.1"
 loguru = "^0.7.2"
 opencv-python-headless = "^4.10.0.84"
+idendrogram = "^0.2.0"
+idendrogram-streamlit-component = "^0.2.5"
 
 
 [tool.poetry.group.dev.dependencies]

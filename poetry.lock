@@ -698,6 +698,42 @@ http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
 
 [[package]]
+name = "idendrogram"
+version = "0.2.0"
+description = "Interactive dendrograms compatible with scipy, scikit-learn and hdbscan"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "idendrogram-0.2.0-py3-none-any.whl", hash = "sha256:b7c5b9e4326838a83625baef17c49e3551c2810a48cbec8bcff94ee42b97ae32"},
+    {file = "idendrogram-0.2.0.tar.gz", hash = "sha256:fcbd65aae8b80221be8b78b3a2319e1c1d042b53beccb2b863009976220ef6bb"},
+]
+
+[package.dependencies]
+numpy = ">=1.22.0"
+scipy = ">=1.8.0"
+
+[package.extras]
+full = ["altair (>=1.4.2)", "hdbscan", "matplotlib", "pandas", "plotly", "scikit-learn"]
+streamlit = ["streamlit"]
+
+[[package]]
+name = "idendrogram-streamlit-component"
+version = "0.2.5"
+description = "Bi-directional Streamlit component for creating interactive dendrograms"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "idendrogram_streamlit_component-0.2.5-py3-none-any.whl", hash = "sha256:e6a5ba6bb6dcfbb0eed2325a29173e525594f5fce8f11b54e315091ba992be39"},
+    {file = "idendrogram_streamlit_component-0.2.5.tar.gz", hash = "sha256:da750510501e489b89ab6506978b8ef09ae9add148a17a7fabef3641e1ffa23b"},
+]
+
+[package.dependencies]
+streamlit = ">=1.0"
+
+[package.extras]
+full = ["idendrogram"]
+
+[[package]]
 name = "idna"
 version = "3.7"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -2853,4 +2889,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "2498c2b97b9013c23e9174fb28a5b7928b6be89b3be7c2e27a480e2ede752219"
+content-hash = "5343665a277c44c6fd3a2b644ed19bf59a346053368d75e282ba89564874291c"
