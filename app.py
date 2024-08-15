@@ -18,6 +18,12 @@ def main():
     uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
     if uploaded_file is not None:
+
+        # Ensure the directory exists
+        temp_dir = "data/input_pdf"
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+
         # Save the uploaded file to a temporary location
         temp_file_path = os.path.join("data/input_pdf", uploaded_file.name)
         st.write(f"Saving uploaded file to: {temp_file_path}")
