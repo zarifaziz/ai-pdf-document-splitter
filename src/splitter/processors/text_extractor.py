@@ -1,6 +1,6 @@
 import os
 import uuid
-from multiprocessing import Pool
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import List
 
@@ -41,10 +41,10 @@ class TextExtractor:
             for f in os.listdir(settings.TEMP_PDF_PAGES_DIR)
             if f.endswith(".pdf")
         ]
-        with Pool() as pool:
-            pool.starmap(
+        with ThreadPoolExecutor() as executor:
+            executor.map(
                 TextExtractor.convert_pdf_to_text,
-                [(pdf_file,) for pdf_file in pdf_files],
+                pdf_files,
             )
 
     def read_extracted_texts(self) -> List[str]:
