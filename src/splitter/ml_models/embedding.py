@@ -24,6 +24,7 @@ def generate_embeddings(input_file: str, texts: List[str]) -> List[np.ndarray]:
             return pickle.load(f)
 
     logger.info(f"Creating new embeddings for {input_file_name}")
+    
     response = openai_client.embeddings.create(
         input=texts, model="text-embedding-3-small"
     )

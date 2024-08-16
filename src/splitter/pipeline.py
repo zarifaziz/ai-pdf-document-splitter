@@ -31,6 +31,7 @@ class Pipeline:
         
         logger.info("Reading extracted texts.")
         texts = self.text_extractor.read_extracted_texts()
+        logger.info(f"Number of texts extracted: {len(texts)}") 
         
         logger.info("Generating embeddings.")
         embeddings = generate_embeddings(self.input_file, texts)
