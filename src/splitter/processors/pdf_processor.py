@@ -31,7 +31,9 @@ class PDFMerger:
         output_key = f"merged:{output_file}"
         with open(output_file, "wb") as outfile:
             writer.write(outfile)
-            outfile.seek(0)
+        
+        # Read the file content after closing the writer
+        with open(output_file, "rb") as outfile:
             redis_conn.set(output_key, outfile.read())
 
 
