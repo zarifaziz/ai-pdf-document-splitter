@@ -66,15 +66,6 @@ def main():
                 else:
                     st.error("Job not found")
 
-    # Display download links if job result is in session state and links have not been displayed yet
-    if "job_result" in st.session_state and not st.session_state.get(
-        "displayed_links", False
-    ):
-        display_download_links(st.session_state["job_result"])
-        st.session_state["displayed_links"] = (
-            True  # Set flag to indicate links have been displayed
-        )
-
     # Display download links if output files are in session state
     if "output_files" in st.session_state:
         display_download_links(st.session_state["output_files"])
