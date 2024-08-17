@@ -3,12 +3,12 @@ import uuid
 from typing import Dict, List
 
 import numpy as np
+from loguru import logger
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
 from ..domain_models import Document, PageInfo
 from ..settings import settings
-from loguru import logger
 
 openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -33,7 +33,9 @@ def generate_topic(text: str) -> str:
     return str(completion.choices[0].message.parsed.topic_name)
 
 
-def create_documents(page_infos: List[PageInfo], clusters: np.ndarray) -> Dict[int, Document]:
+def create_documents(
+    page_infos: List[PageInfo], clusters: np.ndarray
+) -> Dict[int, Document]:
     """Create documents from page infos and clusters."""
     documents = {}
     for page_info, cluster in zip(page_infos, clusters):
@@ -50,16 +52,19 @@ def create_documents(page_infos: List[PageInfo], clusters: np.ndarray) -> Dict[i
             min(documents[cluster].page_range[0], page_info.page_number),
             max(documents[cluster].page_range[1], page_info.page_number),
         )
-    
+
     # Sort documents by the starting page number
-    sorted_documents = dict(sorted(documents.items(), key=lambda item: item[1].page_range[0]))
-    
-    # Reassign cluster labels in order
+    sorted_documents = dict(
+        sorted(documents.items(), key=lambda item: item[1].page_range[0])
+    )
+
+    # Create a new dictionary with reassigned cluster labels
+    new_documents = {}
     for new_cluster, (old_cluster, document) in enumerate(sorted_documents.items()):
         document.topic_name = f"Cluster {new_cluster}"
-        sorted_documents[new_cluster] = sorted_documents.pop(old_cluster)
-    
-    return sorted_documents
+        new_documents[new_cluster] = document
+
+    return new_documents
 
 
 def assign_topics_to_documents(

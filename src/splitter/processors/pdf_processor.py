@@ -21,7 +21,9 @@ class PDFMerger:
             for page_number in page_numbers:
                 writer.add_page(self.reader.pages[page_number])
         except IndexError as e:
-            raise IndexError(f"Page number {page_number} is out of range for the input file.") from e
+            raise IndexError(
+                f"Page number {page_number} is out of range for the input file."
+            ) from e
 
         with open(output_file, "wb") as outfile:
             writer.write(outfile)

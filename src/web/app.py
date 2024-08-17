@@ -1,8 +1,8 @@
 import io
 import os
 import time
-import zipfile
 import uuid
+import zipfile
 
 import redis
 import streamlit as st
@@ -21,7 +21,6 @@ def main():
     uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
     if uploaded_file is not None:
-
         # Ensure the directory exists
         temp_dir = "data/input_pdf"
         if not os.path.exists(temp_dir):
@@ -91,7 +90,7 @@ def save_uploaded_file(uploaded_file):
 
 def enqueue_pipeline(temp_file_path):
     """Enqueue the pipeline job to process the uploaded PDF file."""
-    job = queue.enqueue("worker.run_pipeline", temp_file_path)
+    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path)
     st.session_state["job_id"] = job.id
     st.session_state["prev_status"] = None  # Initialize previous status
     st.success(f"Task started with job ID: {job.id}")
