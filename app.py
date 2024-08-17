@@ -21,7 +21,17 @@ def main():
     uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
     if uploaded_file is not None:
-        temp_file_path = save_uploaded_file(uploaded_file)
+
+        # Ensure the directory exists
+        temp_dir = "data/input_pdf"
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+
+        # Save the uploaded file to a temporary location
+        temp_file_path = os.path.join("data/input_pdf", uploaded_file.name)
+        with open(temp_file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        st.write(f"Uploaded file: {uploaded_file.name}")
 
         if not os.path.exists(temp_file_path):
             st.error(f"File not found: {temp_file_path}")
