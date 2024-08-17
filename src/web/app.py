@@ -39,8 +39,8 @@ def main():
             return
 
         if st.button("Run Pipeline"):
-            granularity = st.session_state.get("granularity", 2.0)
-            enqueue_pipeline(temp_file_path, granularity)
+            split_level = st.session_state.get("split_level", 2.0)
+            enqueue_pipeline(temp_file_path, split_level)
 
     # Check job status
     if "job_id" in st.session_state or "job_id" in st.query_params:
@@ -81,7 +81,7 @@ def display_sidebar():
     st.sidebar.write("### Set Clustering Parameters")
     st.sidebar.write(
         """
-    The granularity setting controls how finely the PDF will be split into individual documents. 
+    The split level setting controls how finely the PDF will be split into individual documents. 
     - **Lower values** (e.g., 0.1) will result in more, smaller documents.
     - **Higher values** (e.g., 5.0) will result in fewer, larger documents.
     
@@ -89,18 +89,18 @@ def display_sidebar():
     """
     )
     st.sidebar.slider(
-        "Granularity (Recommended: 2.0)",
+        "Split Level (Recommended: 2.0)",
         min_value=0.1,
         max_value=5.0,
         value=2.0,
         step=0.1,
-        key="granularity",
+        key="split_level",
     )
 
 
-def enqueue_pipeline(temp_file_path, granularity):
+def enqueue_pipeline(temp_file_path, split_level):
     """Enqueue the pipeline job to process the uploaded PDF file."""
-    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path, granularity)
+    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path, split_level)
     st.session_state["job_id"] = job.id
     st.session_state["prev_status"] = None  # Initialize previous status
     st.success(f"Task started with job ID: {job.id}")
