@@ -15,39 +15,56 @@ This project implements an intelligent PDF document splitter that automatically 
 ## Installation
 
 1. Clone this repository:
-```
-git clone https://github.com/zarifaziz/ai-pdf-document-splitter.git
-cd ai-pdf-document-splitter
-```
+    ```sh
+    git clone https://github.com/zarifaziz/ai-pdf-document-splitter.git
+    cd ai-pdf-document-splitter
+    ```
 
 2. Install dependencies using Poetry:
-```
-poetry install
-```
+    ```sh
+    poetry install
+    ```
 
 3. Copy the example environment file and set the env variables necessary:
-
-```sh
-cp env.example .env
-```
+    ```sh
+    cp env.example .env
+    ```
 
 ## Running the Application
 
-To run the application, use the following command:
+To run the application, use the following steps:
 
-```
-python -m src.splitter.main --input-file path/to/your/input.pdf --clear-cache
-```
+1. Setup redis server
+    ```
+    brew install redis
+    redis-server
+    ```
 
+2. Setup worker
+    ```
+    python -m src.web.worker
+    ```
+
+3. Setup Streamlit web app
+    ```
+    streamlit run src/web/app.py
+    ```
+
+When deployed on Heroku, it reads the following files in addition
+- Procfile
+- heroku_setup.sh
+- runtime.txt
 
 ## Repository Structure
 
 - `src/`: Contains the main source code for the PDF splitter.
   - `splitter/`: Core logic for splitting and clustering PDFs.
-    - `ml_models/`: Machine learning models for clustering.
+    - `ml_models/`: Machine learning models for clustering and embedding.
     - `pdf_processor.py`: Splits the PDF by page.
     - `text_extractor.py`: Extracts text from PDF pages using OCR.
-  - `app/`: Streamlit app for the user interface.
+  - `web/`: Streamlit app for the user interface.
+    - `app.py`: Main Streamlit app.
+    - `worker.py`: Worker script for processing jobs.
 - `notebooks/`: Jupyter notebooks for training and visualization.
 
 ## High-Level Solution

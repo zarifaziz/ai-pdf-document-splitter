@@ -1,2 +1,2 @@
-web: sh setup.sh && streamlit run app.py
-worker: python worker.py
+web: sh heroku_setup.sh && streamlit run src.web.app
+worker: python -m src.web.worker

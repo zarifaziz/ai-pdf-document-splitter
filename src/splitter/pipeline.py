@@ -2,6 +2,8 @@ import os
 import shutil
 from typing import Dict, List
 
+from loguru import logger
+
 from .domain_models import Document, PageInfo
 from .ml_models.clustering import perform_agglomerative_clustering
 from .ml_models.embedding import (generate_embeddings, load_embeddings,
@@ -12,7 +14,6 @@ from .processors.pdf_processor import PDFMerger
 from .processors.text_extractor import TextExtractor
 from .settings import settings
 
-from loguru import logger
 
 class Pipeline:
     def __init__(self, input_file: str) -> None:
@@ -28,21 +29,21 @@ class Pipeline:
 
         logger.info("Extracting texts from PDFs.")
         self.text_extractor.extract_texts_from_pdfs(self.input_file)
-        
+
         logger.info("Reading extracted texts.")
         texts = self.text_extractor.read_extracted_texts()
-        logger.info(f"Number of texts extracted: {len(texts)}") 
-        
+        logger.info(f"Number of texts extracted: {len(texts)}")
+
         logger.info("Generating embeddings.")
         embeddings = generate_embeddings(self.input_file, texts)
         save_embeddings(self.input_file, embeddings)
         embeddings = load_embeddings(self.input_file)
-        
+
         page_infos = self.create_page_infos(embeddings)
-        
+
         logger.info("Performing clustering.")
         clusters = perform_agglomerative_clustering(embeddings)
-        
+
         documents = create_documents(page_infos, clusters)
 
         logger.info(f"Number of documents created: {len(documents)}")
@@ -50,7 +51,7 @@ class Pipeline:
         documents = assign_topics_to_documents(documents, texts)
 
         self.output_pdf_split_results(documents)
-        
+
         output_files = self.create_pdf_documents(documents)
 
         logger.info("Pipeline execution completed.")

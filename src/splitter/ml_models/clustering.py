@@ -3,8 +3,8 @@ from typing import List
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 from sklearn.cluster import AgglomerativeClustering
-
 from sklearn.metrics.pairwise import cosine_similarity
+
 
 def custom_distance(
     embedding1: np.ndarray, embedding2: np.ndarray, alpha: float
@@ -63,8 +63,7 @@ def perform_agglomerative_clustering(
 
 
 def perform_boundary_detection_clustering(
-    embeddings: List[np.ndarray],
-    threshold: float | None = None
+    embeddings: List[np.ndarray], threshold: float | None = None
 ) -> np.ndarray:
     """
     Perform boundary detection clustering on the given embeddings.
@@ -92,7 +91,9 @@ def perform_boundary_detection_clustering(
         new_avg = new_sum / (current_count + 1)
 
         # Calculate cosine similarity
-        similarity = cosine_similarity(np.array([embeddings[i]]), np.array([current_avg]))[0][0]
+        similarity = cosine_similarity(
+            np.array([embeddings[i]]), np.array([current_avg])
+        )[0][0]
 
         if similarity < (1 - threshold):  # Cosine similarity ranges from -1 to 1
             current_cluster += 1
