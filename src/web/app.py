@@ -43,15 +43,17 @@ def main():
                     if job.is_finished:
                         st.session_state["job_result"] = job.result
                         display_success_message()
+                        st.session_state["displayed_links"] = True  # Set flag to indicate links have been displayed
                         display_download_links(st.session_state["job_result"])
                         del st.session_state["job_id"]
                         st.query_params.clear()
                 else:
                     st.error("Job not found")
 
-    # Display download links if job result is in session state
-    if "job_result" in st.session_state:
+    # Display download links if job result is in session state and links have not been displayed yet
+    if "job_result" in st.session_state and not st.session_state.get("displayed_links", False):
         display_download_links(st.session_state["job_result"])
+        st.session_state["displayed_links"] = True  # Set flag to indicate links have been displayed
 
 
 def set_page_config():
@@ -67,7 +69,8 @@ def display_sidebar():
     ### Instructions
     1. Upload a PDF file.
     2. Click on "Run Pipeline" to process the PDF.
-    3. Download the documents using the provided links.
+    3. Wait for pipeline to complete. This could take a few minutes for large PDFs.
+    4. Download the documents using the provided links.
     """
     )
     st.sidebar.write("### Set Clustering Parameters")
