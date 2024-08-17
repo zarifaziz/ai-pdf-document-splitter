@@ -83,25 +83,34 @@ class TextExtractor:
         str
             The extracted text.
         """
+        logger.debug(f"Starting text extraction from file: {file_path}")
         text = ""
         if os.path.isdir(file_path):
+            logger.debug(f"{file_path} is a directory. Processing files inside.")
             for file in os.listdir(file_path):
+                logger.debug(f"Processing file: {file}")
                 if (
                     file.endswith(".pdf")
                     or file.endswith(".jpg")
                     or file.endswith(".png")
                 ):
+                    logger.debug(f"File {file} is a supported format. Extracting text.")
                     new_text = self.extract_text_from_images(
                         self.convert_file_to_images(Path(file_path, file).as_posix())
                     )
                     if new_text:
+                        logger.debug(f"Extracted text from {file}.")
                         text += new_text + "\n"
-        elif os.path.isfile(file_path) and (
-            file_path.endswith(".pdf")
-            or file_path.endswith(".jpg")
-            or file_path.endswith(".png")
-        ):
-            text = self.extract_text_from_images(self.convert_file_to_images(file_path))
+        elif os.path.isfile(file_path):
+            logger.debug(f"{file_path} is a file.")
+            if (
+                file_path.endswith(".pdf")
+                or file_path.endswith(".jpg")
+                or file_path.endswith(".png")
+            ):
+                logger.debug(f"File {file_path} is a supported format. Extracting text.")
+                text = self.extract_text_from_images(self.convert_file_to_images(file_path))
+        logger.debug(f"Completed text extraction from file: {file_path}")
         return text
 
     def extract_text_from_images(self, image_list: List[np.ndarray]) -> str:
