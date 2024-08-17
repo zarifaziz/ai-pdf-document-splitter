@@ -46,6 +46,7 @@ class TextExtractor:
                 TextExtractor.convert_pdf_to_text,
                 pdf_files,
             )
+            executor.shutdown(wait=True)
 
     def read_extracted_texts(self) -> List[str]:
         """
