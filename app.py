@@ -38,36 +38,35 @@ def main():
             return
 
         if st.button("Run Pipeline"):
-            st.info("Enqueuing the pipeline task.")
             job = queue.enqueue('worker.run_pipeline', temp_file_path)
             st.session_state['job_id'] = job.id
             st.success(f"Task started with job ID: {job.id}")
-            st.experimental_set_query_params(job_id=job.id)
+            st.query_params.job_id = job.id
 
     # Check job status
-    if 'job_id' in st.session_state or 'job_id' in st.experimental_get_query_params():
-        job_id = st.session_state.get('job_id') or st.experimental_get_query_params().get('job_id')
+    if 'job_id' in st.session_state or 'job_id' in st.query_params:
+        job_id = st.session_state.get('job_id') or st.query_params.get('job_id')
         job = queue.fetch_job(job_id)
         if job:
-            st.write(f"Job Status: {job.get_status()}")
-            if job.is_finished:
-                st.write("Pipeline executed successfully! The PDF has been split into individual documents.")
-                output_files = job.result
-                # Display and provide download links for the output documents
-                for output_file in output_files:
-                    st.write(f"Document: {os.path.basename(output_file)}")
-                    with open(output_file, "rb") as f:
-                        st.download_button(
-                            label="Download",
-                            data=f,
-                            file_name=os.path.basename(output_file),
-                            mime="application/pdf",
-                        )
-                del st.session_state['job_id']
-                st.experimental_set_query_params()
-            else:
-                time.sleep(5)  # Wait for 5 seconds before rerunning
-                st.experimental_set_query_params(job_id=job_id)
+            while not job.is_finished:
+                st.info(f"Job Status: {job.get_status()}")
+                time.sleep(5)  # Wait for 5 seconds before checking again
+                job = queue.fetch_job(job_id)  # Re-fetch the job to get the latest status
+
+            st.success("Pipeline executed successfully! The PDF has been split into individual documents.")
+            output_files = job.result
+            # Display and provide download links for the output documents
+            for output_file in output_files:
+                st.write(f"Document: {os.path.basename(output_file)}")
+                with open(output_file, "rb") as f:
+                    st.download_button(
+                        label="Download",
+                        data=f,
+                        file_name=os.path.basename(output_file),
+                        mime="application/pdf",
+                    )
+            del st.session_state['job_id']
+            st.query_params.clear()
         else:
             st.error("Job not found")
 
