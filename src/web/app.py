@@ -44,7 +44,8 @@ def main():
                         st.session_state["job_result"] = job.result
                         display_success_message()
                         st.session_state["displayed_links"] = True  # Set flag to indicate links have been displayed
-                        display_download_links(st.session_state["job_result"])
+                        st.session_state["output_files"] = job.result  # Store output files in session state
+                        display_download_links(st.session_state["output_files"])
                         del st.session_state["job_id"]
                         st.query_params.clear()
                 else:
@@ -54,6 +55,10 @@ def main():
     if "job_result" in st.session_state and not st.session_state.get("displayed_links", False):
         display_download_links(st.session_state["job_result"])
         st.session_state["displayed_links"] = True  # Set flag to indicate links have been displayed
+
+    # Display download links if output files are in session state
+    if "output_files" in st.session_state:
+        display_download_links(st.session_state["output_files"])
 
 
 def set_page_config():
