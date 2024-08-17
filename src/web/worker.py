@@ -12,8 +12,8 @@ redis_conn = redis.Redis(host="localhost", port=6379)
 queue = Queue(connection=redis_conn)
 
 
-def run_pipeline(temp_file_path):
-    pipeline = Pipeline(temp_file_path)
+def run_pipeline(temp_file_path, distance_threshold):
+    pipeline = Pipeline(temp_file_path, distance_threshold)
     output_files = pipeline.run()
     return output_files
 

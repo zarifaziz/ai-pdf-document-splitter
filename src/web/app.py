@@ -16,7 +16,9 @@ queue = Queue(connection=redis_conn)
 def main():
     """Main function to set up the Streamlit app and handle file uploads and job status."""
     set_page_config()
-    display_instructions()
+    display_sidebar()
+
+    st.title("AI Automated PDF Splitter")
 
     uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
@@ -37,7 +39,8 @@ def main():
             return
 
         if st.button("Run Pipeline"):
-            enqueue_pipeline(temp_file_path)
+            split_level = st.session_state.get("split_level", 2.0)
+            enqueue_pipeline(temp_file_path, split_level)
 
     # Check job status
     if "job_id" in st.session_state or "job_id" in st.query_params:
@@ -64,33 +67,40 @@ def set_page_config():
     st.set_page_config(page_title="AI Automated PDF Splitter", layout="wide")
 
 
-def display_instructions():
-    """Display the instructions for using the app."""
-    st.title("AI Automated PDF Splitter")
-    st.write(
+def display_sidebar():
+    """Display the sidebar with instructions and settings."""
+    st.sidebar.title("Settings and Instructions")
+    st.sidebar.write(
         """
     ### Instructions
     1. Upload a PDF file.
     2. Click on "Run Pipeline" to process the PDF.
-    3. Download the split documents using the provided links.
+    3. Download the documents using the provided links.
     """
+    )
+    st.sidebar.write("### Set Clustering Parameters")
+    st.sidebar.write(
+        """
+    The split level setting controls how finely the PDF will be split into individual documents. 
+    - **Lower values** (e.g., 0.1) will result in more, smaller documents.
+    - **Higher values** (e.g., 5.0) will result in fewer, larger documents.
+    
+    Adjust the slider to find the right balance for your needs. The recommended value is 2.0, which provides a good balance for most documents.
+    """
+    )
+    st.sidebar.slider(
+        "Split Level (Recommended: 2.0)",
+        min_value=0.1,
+        max_value=5.0,
+        value=2.0,
+        step=0.1,
+        key="split_level",
     )
 
 
-def save_uploaded_file(uploaded_file):
-    """Save the uploaded PDF file to a temporary directory."""
-    temp_dir = "data/input_pdf"
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
-    temp_file_path = os.path.join(temp_dir, uploaded_file.name)
-    with open(temp_file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    return temp_file_path
-
-
-def enqueue_pipeline(temp_file_path):
+def enqueue_pipeline(temp_file_path, split_level):
     """Enqueue the pipeline job to process the uploaded PDF file."""
-    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path)
+    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path, split_level)
     st.session_state["job_id"] = job.id
     st.session_state["prev_status"] = None  # Initialize previous status
     st.success(f"Task started with job ID: {job.id}")

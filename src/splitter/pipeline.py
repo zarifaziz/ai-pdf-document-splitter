@@ -16,9 +16,10 @@ from .settings import settings
 
 
 class Pipeline:
-    def __init__(self, input_file: str) -> None:
+    def __init__(self, input_file: str, distance_threshold: float) -> None:
         """Initialize the Pipeline with the input file and text extractor."""
         self.input_file = input_file
+        self.distance_threshold = distance_threshold
         self.text_extractor = TextExtractor()
 
     def run(self, clear_cache: bool = True) -> List[str]:
@@ -42,7 +43,9 @@ class Pipeline:
         page_infos = self.create_page_infos(embeddings)
 
         logger.info("Performing clustering.")
-        clusters = perform_agglomerative_clustering(embeddings)
+        clusters = perform_agglomerative_clustering(
+            embeddings, distance_threshold=self.distance_threshold
+        )
 
         documents = create_documents(page_infos, clusters)
 
