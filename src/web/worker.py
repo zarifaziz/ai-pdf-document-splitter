@@ -18,7 +18,8 @@ def run_pipeline(file_key, distance_threshold):
         raise FileNotFoundError(f"File not found in Redis: {file_key}")
 
     # Save the file to a temporary location
-    local_file_path = os.path.join("data/input_pdf", os.path.basename(file_key))
+    sanitized_file_key = file_key.replace("pdf:", "")
+    local_file_path = os.path.join("data/input_pdf", os.path.basename(sanitized_file_key))
     os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
     with open(local_file_path, "wb") as f:
         f.write(file_content)
