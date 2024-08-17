@@ -35,8 +35,8 @@ def main():
             enqueue_pipeline(file_key, split_level)
 
             # Check job status
-            if "job_id" in st.session_state or "job_id" in st.query_params:
-                job_id = st.session_state.get("job_id") or st.query_params.get("job_id")
+            job_id = st.session_state.get("job_id")
+            if job_id:
                 job = queue.fetch_job(job_id)
                 if job:
                     job = display_job_status(job)
