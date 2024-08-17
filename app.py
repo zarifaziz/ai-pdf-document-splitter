@@ -26,9 +26,9 @@ def main():
 
         # Save the uploaded file to a temporary location
         temp_file_path = os.path.join("data/input_pdf", uploaded_file.name)
-        st.write(f"Saving uploaded file to: {temp_file_path}")
         with open(temp_file_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
+        st.write(f"Uploaded file: {uploaded_file.name}")
 
         if not os.path.exists(temp_file_path):
             st.error(f"File not found: {temp_file_path}")
