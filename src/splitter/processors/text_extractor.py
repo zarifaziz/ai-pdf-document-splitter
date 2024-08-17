@@ -207,5 +207,7 @@ class TextExtractor:
         text = text_extractor.extract_text_from_file(pdf_path)
         txt_filename = os.path.splitext(os.path.basename(pdf_path))[0] + ".txt"
         txt_path = os.path.join(settings.TXT_OUTPUT_DIR, txt_filename)
+        
+        logger.info(f"Writing extracted text to {txt_path}")
         with open(txt_path, "w") as txt_file:
             txt_file.write(text)
