@@ -94,7 +94,6 @@ class Pipeline:
         else:
             logger.warning(f"Directory {data_directory} does not exist.")
 
-
     def output_pdf_split_results(self, documents_dict: Dict[int, Document]) -> None:
         """Print the clustering results for each document."""
         for document in documents_dict.values():

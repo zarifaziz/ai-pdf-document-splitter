@@ -6,13 +6,12 @@ from typing import List
 
 import cv2
 import numpy as np
-import pytesseract
-pytesseract.pytesseract.tesseract_cmd = '/app/vendor/tesseract-ocr/bin/tesseract'
+from loguru import logger
 from pdf2image import convert_from_path
 
 from ..settings import settings
 from .pdf_processor import PDFSplitter
-from loguru import logger
+
 
 class TextExtractor:
     """
@@ -109,9 +108,68 @@ class TextExtractor:
                 or file_path.endswith(".jpg")
                 or file_path.endswith(".png")
             ):
-                logger.debug(f"File {file_path} is a supported format. Extracting text.")
-                text = self.extract_text_from_images(self.convert_file_to_images(file_path))
+                logger.debug(
+                    f"File {file_path} is a supported format. Extracting text."
+                )
+                text = self.extract_text_from_images(
+                    self.convert_file_to_images(file_path)
+                )
         logger.debug(f"Completed text extraction from file: {file_path}")
+        return text
+
+    def extract_text_from_images_textract(self, image_list: List[np.ndarray]) -> str:
+        """
+        Extracts text from a list of images using Amazon Textract.
+
+        Parameters
+        ----------
+        image_list : List[np.ndarray]
+            A list of images from which to extract text.
+
+        Returns
+        -------
+        str
+            The extracted text.
+        """
+        import base64
+        from typing import List
+
+        import boto3
+        import cv2
+        import numpy as np
+
+        logger.debug("Starting text extraction from images using Amazon Textract.")
+
+        # Initialize the Textract client
+        textract = boto3.client(
+            "textract",
+            aws_access_key_id="YOUR_ACCESS_KEY_ID",
+            aws_secret_access_key="YOUR_SECRET_ACCESS_KEY",
+            region_name="YOUR_REGION",
+        )  # e.g., 'us-west-2'
+
+        text = []
+        for image in image_list:
+            logger.debug("Extracting text from an image.")
+            _, encoded_image = cv2.imencode(".jpg", image)
+            image_bytes = encoded_image.tobytes()
+
+            response = textract.detect_document_text(Document={"Bytes": image_bytes})
+
+            image_text = []
+            for item in response["Blocks"]:
+                if item["BlockType"] == "LINE":
+                    image_text.append(item["Text"])
+
+            if image_text:
+                text.append(" ".join(image_text))
+            else:
+                logger.debug("No text detected in the image.")
+
+        logger.debug("Filtering out short text segments.")
+        text = [x for x in text if len(x) > 1]
+        text = "\n".join(text)
+        logger.debug("Completed text extraction from images.")
         return text
 
     def extract_text_from_images(self, image_list: List[np.ndarray]) -> str:
@@ -128,12 +186,43 @@ class TextExtractor:
         str
             The extracted text.
         """
+        import base64
+
+        import requests
+
+        VISION_API_URL = (
+            "https://vision.googleapis.com/v1/images:annotate?key="
+            + settings.GOOGLE_API_KEY
+        )
+
         logger.debug("Starting text extraction from images.")
         text = []
         for image in image_list:
+            logger.debug("encoding image")
+            _, encoded_image = cv2.imencode(".jpg", image)
+            content = base64.b64encode(encoded_image).decode("utf-8")
+            logger.debug("encoded image")
+            request_body = {
+                "requests": [
+                    {
+                        "image": {"content": content},
+                        "features": [{"type": "TEXT_DETECTION"}],
+                    }
+                ]
+            }
             logger.debug("Extracting text from an image.")
-            words = pytesseract.image_to_string(image, config="--psm 1 --oem 1")
-            text.append(words)
+            response = requests.post(VISION_API_URL, json=request_body)
+
+            if response.status_code == 200:
+                result = response.json()
+                if "textAnnotations" in result["responses"][0]:
+                    words = result["responses"][0]["textAnnotations"][0]["description"]
+                    text.append(words)
+                else:
+                    logger.debug("No text detected in the image.")
+            else:
+                logger.error(f"Error: {response.status_code}, {response.text}")
+
         logger.debug("Filtering out short text segments.")
         text = [x for x in text if len(x) > 1]
         text = "\n".join(text)
@@ -175,7 +264,6 @@ class TextExtractor:
     def preprocess_image(self, file_path: str) -> np.ndarray:
         """
         Preprocesses images for text extraction, converting them from BGR to RGB format
-        needed for pytesseract.
 
         Parameters
         ----------
@@ -191,7 +279,6 @@ class TextExtractor:
         image = image[..., ::-1]  # Convert BGR to RGB
         return image
 
-
     @classmethod
     def convert_pdf_to_text(cls, pdf_path: str) -> None:
         """
@@ -203,24 +290,24 @@ class TextExtractor:
             The path to the PDF file to convert.
         """
         logger.debug(f"convert_pdf_to_text: Starting processing for {pdf_path}")
-        
+
         # Initialize TextExtractor
         logger.debug("Initializing TextExtractor instance.")
         text_extractor = cls()
-        
+
         # Extract text from the PDF file
         logger.debug(f"Extracting text from file: {pdf_path}")
         text = text_extractor.extract_text_from_file(pdf_path)
         logger.debug("extraction done")
-        
+
         # Generate the output text file path
         txt_filename = os.path.splitext(os.path.basename(pdf_path))[0] + ".txt"
         txt_path = os.path.join(settings.TXT_OUTPUT_DIR, txt_filename)
         logger.debug(f"Generated text file path: {txt_path}")
-        
+
         # Write the extracted text to the output file
         logger.debug(f"Writing extracted text to {txt_path}")
         with open(txt_path, "w") as txt_file:
             txt_file.write(text)
-        
+
         logger.debug(f"convert_pdf_to_text: Completed processing for {pdf_path}")
