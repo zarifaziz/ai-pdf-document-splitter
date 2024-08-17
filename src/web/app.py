@@ -24,6 +24,9 @@ def main():
     uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
     if uploaded_file is not None:
+        # Clean up Redis files from previous uploads
+        cleanup_redis_files()
+
         # Read the file and store it in Redis
         file_content = uploaded_file.read()
         file_key = f"pdf:{uploaded_file.name}"
@@ -43,8 +46,12 @@ def main():
                     if job.is_finished:
                         st.session_state["job_result"] = job.result
                         display_success_message()
-                        st.session_state["displayed_links"] = True  # Set flag to indicate links have been displayed
-                        st.session_state["output_files"] = job.result  # Store output files in session state
+                        st.session_state["displayed_links"] = (
+                            True  # Set flag to indicate links have been displayed
+                        )
+                        st.session_state["output_files"] = (
+                            job.result
+                        )  # Store output files in session state
                         display_download_links(st.session_state["output_files"])
                         del st.session_state["job_id"]
                         st.query_params.clear()
@@ -52,9 +59,13 @@ def main():
                     st.error("Job not found")
 
     # Display download links if job result is in session state and links have not been displayed yet
-    if "job_result" in st.session_state and not st.session_state.get("displayed_links", False):
+    if "job_result" in st.session_state and not st.session_state.get(
+        "displayed_links", False
+    ):
         display_download_links(st.session_state["job_result"])
-        st.session_state["displayed_links"] = True  # Set flag to indicate links have been displayed
+        st.session_state["displayed_links"] = (
+            True  # Set flag to indicate links have been displayed
+        )
 
     # Display download links if output files are in session state
     if "output_files" in st.session_state:
@@ -174,6 +185,12 @@ def display_download_links(output_files):
         help="Click to download all documents as a ZIP file",
         use_container_width=False,
     )
+
+
+def cleanup_redis_files():
+    """Delete all Redis keys related to the PDF files."""
+    for key in redis_conn.scan_iter("pdf:*"):
+        redis_conn.delete(key)
 
 
 if __name__ == "__main__":

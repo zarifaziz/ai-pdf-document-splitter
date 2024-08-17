@@ -1,5 +1,6 @@
 import os
 from typing import List
+
 import redis
 from pypdf import PdfReader, PdfWriter
 
@@ -7,6 +8,7 @@ from ..settings import settings
 
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_conn = redis.from_url(redis_url)
+
 
 class PDFMerger:
     def __init__(self, input_file: str):
@@ -31,7 +33,7 @@ class PDFMerger:
         output_key = f"merged:{output_file}"
         with open(output_file, "wb") as outfile:
             writer.write(outfile)
-        
+
         # Read the file content after closing the writer
         with open(output_file, "rb") as outfile:
             redis_conn.set(output_key, outfile.read())
