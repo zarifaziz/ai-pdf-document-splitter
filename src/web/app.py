@@ -24,8 +24,6 @@ def main():
     uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
     if uploaded_file is not None:
-        # Clean up Redis files from previous uploads
-        cleanup_redis_files()
 
         # Ensure the directory exists
         temp_dir = "data/input_pdf"
@@ -66,9 +64,10 @@ def main():
                 else:
                     st.error("Job not found")
 
-    # Display download links if output files are in session state
-    if "output_files" in st.session_state:
+    # Display download links if output files are in session state and links have not been displayed yet
+    if "output_files" in st.session_state and not st.session_state.get("displayed_links", False):
         display_download_links(st.session_state["output_files"])
+        st.session_state["displayed_links"] = True  # Set flag to indicate links have been displayed
 
 
 def set_page_config():
@@ -184,12 +183,6 @@ def display_download_links(output_files):
         help="Click to download all documents as a ZIP file",
         use_container_width=False,
     )
-
-
-def cleanup_redis_files():
-    """Delete all Redis keys related to the PDF files."""
-    for key in redis_conn.scan_iter("pdf:*"):
-        redis_conn.delete(key)
 
 
 if __name__ == "__main__":
