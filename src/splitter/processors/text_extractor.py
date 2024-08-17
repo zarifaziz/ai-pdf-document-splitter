@@ -47,7 +47,7 @@ class TextExtractor:
                 pdf_files,
             )
             executor.shutdown(wait=True)
-        logger.info("extract_texts_from_pdfs: all threads complete")
+        logger.debug("extract_texts_from_pdfs: all threads complete")
 
     def read_extracted_texts(self) -> List[str]:
         """
@@ -204,7 +204,7 @@ class TextExtractor:
         pdf_path : str
             The path to the PDF file to convert.
         """
-        logger.info(f"convert_pdf_to_text: Starting processing for {pdf_path}")
+        logger.debug(f"convert_pdf_to_text: Starting processing for {pdf_path}")
         
         # Initialize TextExtractor
         logger.debug("Initializing TextExtractor instance.")
@@ -213,6 +213,7 @@ class TextExtractor:
         # Extract text from the PDF file
         logger.debug(f"Extracting text from file: {pdf_path}")
         text = text_extractor.extract_text_from_file(pdf_path)
+        logger.debug("extraction done")
         
         # Generate the output text file path
         txt_filename = os.path.splitext(os.path.basename(pdf_path))[0] + ".txt"
@@ -220,8 +221,8 @@ class TextExtractor:
         logger.debug(f"Generated text file path: {txt_path}")
         
         # Write the extracted text to the output file
-        logger.info(f"Writing extracted text to {txt_path}")
+        logger.debug(f"Writing extracted text to {txt_path}")
         with open(txt_path, "w") as txt_file:
             txt_file.write(text)
         
-        logger.info(f"convert_pdf_to_text: Completed processing for {pdf_path}")
+        logger.debug(f"convert_pdf_to_text: Completed processing for {pdf_path}")
