@@ -127,13 +127,19 @@ class TextExtractor:
         str
             The extracted text.
         """
+        logger.debug("Starting text extraction from images.")
         text = []
         for image in image_list:
+            logger.debug("Extracting text from an image.")
             words = pytesseract.image_to_string(image, config="--psm 1 --oem 1")
+            logger.debug(f"Raw extracted text: {words}")
             words = self.clean_extracted_text(words)
+            logger.debug(f"Cleaned extracted text: {words}")
             text.append(words)
+        logger.debug("Filtering out short text segments.")
         text = [x for x in text if len(x) > 1]
         text = "\n".join(text)
+        logger.debug("Completed text extraction from images.")
         return text
 
     def convert_file_to_images(self, file_path: str) -> List[np.ndarray]:
