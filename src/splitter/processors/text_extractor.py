@@ -11,7 +11,7 @@ from pdf2image import convert_from_path
 
 from ..settings import settings
 from .pdf_processor import PDFSplitter
-
+from loguru import logger
 
 class TextExtractor:
     """
@@ -202,6 +202,7 @@ class TextExtractor:
         pdf_path : str
             The path to the PDF file to convert.
         """
+        logger.info(f"convert_pdf_to_text: processing {pdf_path}")
         text_extractor = cls()
         text = text_extractor.extract_text_from_file(pdf_path)
         txt_filename = os.path.splitext(os.path.basename(pdf_path))[0] + ".txt"

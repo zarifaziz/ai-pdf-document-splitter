@@ -34,23 +34,23 @@ def main():
             split_level = st.session_state.get("split_level", 2.0)
             enqueue_pipeline(file_key, split_level)
 
-    # Check job status
-    if "job_id" in st.session_state or "job_id" in st.query_params:
-        job_id = st.session_state.get("job_id") or st.query_params.get("job_id")
-        job = queue.fetch_job(job_id)
-        if job:
-            job = display_job_status(job)
-            if job.is_finished:
-                st.session_state["job_result"] = job.result
-                display_success_message()
-                display_download_links(st.session_state["job_result"])
-                del st.session_state["job_id"]
-                st.query_params.clear()
-        else:
-            st.error("Job not found")
+            # Check job status
+            if "job_id" in st.session_state or "job_id" in st.query_params:
+                job_id = st.session_state.get("job_id") or st.query_params.get("job_id")
+                job = queue.fetch_job(job_id)
+                if job:
+                    job = display_job_status(job)
+                    if job.is_finished:
+                        st.session_state["job_result"] = job.result
+                        display_success_message()
+                        display_download_links(st.session_state["job_result"])
+                        del st.session_state["job_id"]
+                        st.query_params.clear()
+                else:
+                    st.error("Job not found")
 
     # Display download links if job result is in session state
-    elif "job_result" in st.session_state:
+    if "job_result" in st.session_state:
         display_download_links(st.session_state["job_result"])
 
 
