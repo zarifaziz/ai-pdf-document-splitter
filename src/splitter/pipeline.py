@@ -3,7 +3,7 @@ import shutil
 from typing import Dict, List
 
 from .domain_models import Document, PageInfo
-from .ml_models.clustering import perform_agglomerative_clustering, perform_boundary_detection_clustering
+from .ml_models.clustering import perform_agglomerative_clustering
 from .ml_models.embedding import (generate_embeddings, load_embeddings,
                                   save_embeddings)
 from .processors.document_processor import (assign_topics_to_documents,

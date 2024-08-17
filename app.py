@@ -22,7 +22,6 @@ def main():
 
     if uploaded_file is not None:
         temp_file_path = save_uploaded_file(uploaded_file)
-        st.write(f"Uploaded file: {uploaded_file.name}")
 
         if not os.path.exists(temp_file_path):
             st.error(f"File not found: {temp_file_path}")

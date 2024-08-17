@@ -18,6 +18,7 @@ class TopicName(BaseModel):
 
 
 def generate_topic(text: str) -> str:
+    """Generate a topic for the given text."""
     completion = openai_client.beta.chat.completions.parse(
         model="gpt-4o-mini",
         messages=[
@@ -32,13 +33,8 @@ def generate_topic(text: str) -> str:
     return str(completion.choices[0].message.parsed.topic_name)
 
 
-def generate_topic_dummy(text: str) -> str:
-    return "Dummy Topic"
-
-
-def create_documents(
-    page_infos: List[PageInfo], clusters: np.ndarray
-) -> Dict[int, Document]:
+def create_documents(page_infos: List[PageInfo], clusters: np.ndarray) -> Dict[int, Document]:
+    """Create documents from page infos and clusters."""
     documents = {}
     for page_info, cluster in zip(page_infos, clusters):
         cluster = int(cluster)
@@ -54,12 +50,22 @@ def create_documents(
             min(documents[cluster].page_range[0], page_info.page_number),
             max(documents[cluster].page_range[1], page_info.page_number),
         )
-    return documents
+    
+    # Sort documents by the starting page number
+    sorted_documents = dict(sorted(documents.items(), key=lambda item: item[1].page_range[0]))
+    
+    # Reassign cluster labels in order
+    for new_cluster, (old_cluster, document) in enumerate(sorted_documents.items()):
+        document.topic_name = f"Cluster {new_cluster}"
+        sorted_documents[new_cluster] = sorted_documents.pop(old_cluster)
+    
+    return sorted_documents
 
 
 def assign_topics_to_documents(
     documents_dict: Dict[int, Document], texts: List[str], strategy: str = "first_page"
 ) -> Dict[int, Document]:
+    """Assign topics to documents based on the given strategy."""
     for document in documents_dict.values():
         try:
             if strategy == "random_sample":
