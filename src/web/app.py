@@ -16,7 +16,9 @@ queue = Queue(connection=redis_conn)
 def main():
     """Main function to set up the Streamlit app and handle file uploads and job status."""
     set_page_config()
-    display_instructions()
+    display_sidebar()
+
+    st.title("AI Automated PDF Splitter")
 
     uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
@@ -37,7 +39,8 @@ def main():
             return
 
         if st.button("Run Pipeline"):
-            enqueue_pipeline(temp_file_path)
+            distance_threshold = st.session_state.get("distance_threshold", 2.0)
+            enqueue_pipeline(temp_file_path, distance_threshold)
 
     # Check job status
     if "job_id" in st.session_state or "job_id" in st.query_params:
@@ -64,10 +67,10 @@ def set_page_config():
     st.set_page_config(page_title="AI Automated PDF Splitter", layout="wide")
 
 
-def display_instructions():
-    """Display the instructions for using the app."""
-    st.title("AI Automated PDF Splitter")
-    st.write(
+def display_sidebar():
+    """Display the sidebar with instructions and settings."""
+    st.sidebar.title("Settings and Instructions")
+    st.sidebar.write(
         """
     ### Instructions
     1. Upload a PDF file.
@@ -75,22 +78,20 @@ def display_instructions():
     3. Download the split documents using the provided links.
     """
     )
+    st.sidebar.write("### Set Clustering Parameters")
+    st.sidebar.slider(
+        "Distance Threshold",
+        min_value=0.1,
+        max_value=5.0,
+        value=2.0,
+        step=0.1,
+        key="distance_threshold",
+    )
 
 
-def save_uploaded_file(uploaded_file):
-    """Save the uploaded PDF file to a temporary directory."""
-    temp_dir = "data/input_pdf"
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
-    temp_file_path = os.path.join(temp_dir, uploaded_file.name)
-    with open(temp_file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    return temp_file_path
-
-
-def enqueue_pipeline(temp_file_path):
+def enqueue_pipeline(temp_file_path, distance_threshold):
     """Enqueue the pipeline job to process the uploaded PDF file."""
-    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path)
+    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path, distance_threshold)
     st.session_state["job_id"] = job.id
     st.session_state["prev_status"] = None  # Initialize previous status
     st.success(f"Task started with job ID: {job.id}")
