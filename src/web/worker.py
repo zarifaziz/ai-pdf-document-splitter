@@ -6,7 +6,8 @@ from rq import Connection, Queue, Worker
 from src.splitter.pipeline import Pipeline
 
 # Connect to Redis
-redis_conn = redis.Redis(host="localhost", port=6379)
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+redis_conn = redis.from_url(redis_url)
 
 # Define the queue
 queue = Queue(connection=redis_conn)
