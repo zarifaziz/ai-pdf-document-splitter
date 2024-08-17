@@ -133,9 +133,6 @@ class TextExtractor:
         for image in image_list:
             logger.debug("Extracting text from an image.")
             words = pytesseract.image_to_string(image, config="--psm 1 --oem 1")
-            logger.debug(f"Raw extracted text: {words}")
-            words = self.clean_extracted_text(words)
-            logger.debug(f"Cleaned extracted text: {words}")
             text.append(words)
         logger.debug("Filtering out short text segments.")
         text = [x for x in text if len(x) > 1]
@@ -194,21 +191,6 @@ class TextExtractor:
         image = image[..., ::-1]  # Convert BGR to RGB
         return image
 
-    def clean_extracted_text(self, words: str) -> str:
-        """
-        Cleans and formats extracted text.
-
-        Parameters
-        ----------
-        words : str
-            The raw text extracted from an image or document.
-
-        Returns
-        -------
-        str
-            The cleaned and formatted text.
-        """
-        return words
 
     @classmethod
     def convert_pdf_to_text(cls, pdf_path: str) -> None:
