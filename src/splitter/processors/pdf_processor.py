@@ -1,10 +1,12 @@
 import os
 from typing import List
-
+import redis
 from pypdf import PdfReader, PdfWriter
 
 from ..settings import settings
 
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+redis_conn = redis.from_url(redis_url)
 
 class PDFMerger:
     def __init__(self, input_file: str):
@@ -25,8 +27,12 @@ class PDFMerger:
                 f"Page number {page_number} is out of range for the input file."
             ) from e
 
+        # Write to Redis
+        output_key = f"merged:{output_file}"
         with open(output_file, "wb") as outfile:
             writer.write(outfile)
+            outfile.seek(0)
+            redis_conn.set(output_key, outfile.read())
 
 
 class PDFSplitter:

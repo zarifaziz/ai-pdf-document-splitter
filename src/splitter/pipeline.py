@@ -111,7 +111,7 @@ class Pipeline:
             )
             page_numbers = [page.page_number for page in document.pages]
             pdf_merger.merge_pages(page_numbers, output_file)
-            output_files.append(output_file)
+            output_files.append(f"merged:{output_file}")
         output_files.sort()
         return output_files
 

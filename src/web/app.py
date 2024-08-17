@@ -129,7 +129,8 @@ def create_zip(output_files):
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for output_file in output_files:
-            zip_file.write(output_file, os.path.basename(output_file))
+            file_content = redis_conn.get(f"{output_file}")
+            zip_file.writestr(os.path.basename(output_file), file_content)
     zip_buffer.seek(0)
     return zip_buffer
 
@@ -140,16 +141,16 @@ def display_download_links(output_files):
     st.markdown("<h4>Download Split Documents</h4>", unsafe_allow_html=True)
     for idx, output_file in enumerate(output_files):
         st.markdown(f"**Document: {os.path.basename(output_file)}**")
-        with open(output_file, "rb") as f:
-            st.download_button(
-                label="Download",
-                data=f,
-                file_name=os.path.basename(output_file),
-                mime="application/pdf",
-                key=f"download_{unique_id}_{idx}",  # Unique key for each download button
-                help="Click to download this document",
-                use_container_width=False,
-            )
+        file_content = redis_conn.get(f"{output_file}")
+        st.download_button(
+            label="Download",
+            data=file_content,
+            file_name=os.path.basename(output_file),
+            mime="application/pdf",
+            key=f"download_{unique_id}_{idx}",  # Unique key for each download button
+            help="Click to download this document",
+            use_container_width=False,
+        )
 
     # Add spacing before the "Download All" button
     st.markdown("<br>", unsafe_allow_html=True)
