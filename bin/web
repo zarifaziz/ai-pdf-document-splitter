@@ -1,0 +1,6 @@
+#!/bin/bash
+
+sh heroku_setup.sh &
+streamlit run src/web/app.py &
+python -m src.web.worker &
+wait

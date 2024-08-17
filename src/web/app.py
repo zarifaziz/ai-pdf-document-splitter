@@ -27,15 +27,23 @@ def main():
         # Clean up Redis files from previous uploads
         cleanup_redis_files()
 
-        # Read the file and store it in Redis
-        file_content = uploaded_file.read()
-        file_key = f"pdf:{uploaded_file.name}"
-        redis_conn.set(file_key, file_content)
+        # Ensure the directory exists
+        temp_dir = "data/input_pdf"
+        os.makedirs(temp_dir, exist_ok=True)
+
+        # Save the uploaded file to a temporary location
+        temp_file_path = os.path.join("data/input_pdf", uploaded_file.name)
+        with open(temp_file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
         st.write(f"Uploaded file: {uploaded_file.name}")
+
+        if not os.path.exists(temp_file_path):
+            st.error(f"File not found: {temp_file_path}")
+            return
 
         if st.button("Run Pipeline"):
             split_level = st.session_state.get("split_level", 2.0)
-            enqueue_pipeline(file_key, split_level)
+            enqueue_pipeline(temp_file_path, split_level)
 
             # Check job status
             job_id = st.session_state.get("job_id")
@@ -109,9 +117,9 @@ def display_sidebar():
     )
 
 
-def enqueue_pipeline(file_key, split_level):
+def enqueue_pipeline(file_path: str, split_level: float):
     """Enqueue the pipeline job to process the uploaded PDF file."""
-    job = queue.enqueue("src.web.worker.run_pipeline", file_key, split_level)
+    job = queue.enqueue("src.web.worker.run_pipeline", file_path, split_level)
     st.session_state["job_id"] = job.id
     st.session_state["prev_status"] = None  # Initialize previous status
     st.success(f"Task started with job ID: {job.id}")
@@ -148,8 +156,8 @@ def create_zip(output_files):
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for output_file in output_files:
-            file_content = redis_conn.get(f"{output_file}")
-            zip_file.writestr(os.path.basename(output_file), file_content)
+            with open(output_file, "rb") as f:
+                zip_file.writestr(os.path.basename(output_file), f.read())
     zip_buffer.seek(0)
     return zip_buffer
 
@@ -160,16 +168,16 @@ def display_download_links(output_files):
     st.markdown("<h4>Download Split Documents</h4>", unsafe_allow_html=True)
     for idx, output_file in enumerate(output_files):
         st.markdown(f"**Document: {os.path.basename(output_file)}**")
-        file_content = redis_conn.get(f"{output_file}")
-        st.download_button(
-            label="Download",
-            data=file_content,
-            file_name=os.path.basename(output_file),
-            mime="application/pdf",
-            key=f"download_{unique_id}_{idx}",  # Unique key for each download button
-            help="Click to download this document",
-            use_container_width=False,
-        )
+        with open(output_file, "rb") as file_content:
+            st.download_button(
+                label="Download",
+                data=file_content,
+                file_name=os.path.basename(output_file),
+                mime="application/pdf",
+                key=f"download_{unique_id}_{idx}",  # Unique key for each download button
+                help="Click to download this document",
+                use_container_width=False,
+            )
 
     # Add spacing before the "Download All" button
     st.markdown("<br>", unsafe_allow_html=True)
