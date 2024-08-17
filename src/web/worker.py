@@ -2,6 +2,7 @@ import os
 import redis
 from rq import Connection, Queue, Worker
 from src.splitter.pipeline import Pipeline
+from loguru import logger
 
 # Connect to Redis
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -24,7 +25,19 @@ def run_pipeline(file_key, distance_threshold):
 
     # Run the pipeline
     pipeline = Pipeline(local_file_path, distance_threshold)
-    output_files = pipeline.run()
+    try:
+        output_files = pipeline.run()
+    except Exception as e:
+        # Log the contents of the data directory
+        data_directory = "data"
+        if os.path.exists(data_directory):
+            for root, dirs, files in os.walk(data_directory):
+                for name in files:
+                    logger.info(f"File: {os.path.join(root, name)}")
+                for name in dirs:
+                    logger.info(f"Directory: {os.path.join(root, name)}")
+        logger.error(f"Pipeline failed: {e}")
+        raise
 
     # Delete the file from Redis after successful run
     redis_conn.delete(file_key)
