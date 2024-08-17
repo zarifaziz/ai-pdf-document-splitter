@@ -24,24 +24,15 @@ def main():
     uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
     if uploaded_file is not None:
-        # Ensure the directory exists
-        temp_dir = "data/input_pdf"
-        if not os.path.exists(temp_dir):
-            os.makedirs(temp_dir)
-
-        # Save the uploaded file to a temporary location
-        temp_file_path = os.path.join("data/input_pdf", uploaded_file.name)
-        with open(temp_file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+        # Read the file and store it in Redis
+        file_content = uploaded_file.read()
+        file_key = f"pdf:{uploaded_file.name}"
+        redis_conn.set(file_key, file_content)
         st.write(f"Uploaded file: {uploaded_file.name}")
-
-        if not os.path.exists(temp_file_path):
-            st.error(f"File not found: {temp_file_path}")
-            return
 
         if st.button("Run Pipeline"):
             split_level = st.session_state.get("split_level", 2.0)
-            enqueue_pipeline(temp_file_path, split_level)
+            enqueue_pipeline(file_key, split_level)
 
     # Check job status
     if "job_id" in st.session_state or "job_id" in st.query_params:
@@ -99,9 +90,9 @@ def display_sidebar():
     )
 
 
-def enqueue_pipeline(temp_file_path, split_level):
+def enqueue_pipeline(file_key, split_level):
     """Enqueue the pipeline job to process the uploaded PDF file."""
-    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path, split_level)
+    job = queue.enqueue("src.web.worker.run_pipeline", file_key, split_level)
     st.session_state["job_id"] = job.id
     st.session_state["prev_status"] = None  # Initialize previous status
     st.success(f"Task started with job ID: {job.id}")
