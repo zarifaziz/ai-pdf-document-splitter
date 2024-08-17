@@ -23,6 +23,8 @@ loguru = "^0.7.2"
 opencv-python-headless = "^4.10.0.84"
 idendrogram = "^0.2.0"
 idendrogram-streamlit-component = "^0.2.5"
+redis = "^5.0.8"
+rq = "^1.16.2"
 
 
 [tool.poetry.group.dev.dependencies]
