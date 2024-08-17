@@ -39,8 +39,8 @@ def main():
             return
 
         if st.button("Run Pipeline"):
-            distance_threshold = st.session_state.get("distance_threshold", 2.0)
-            enqueue_pipeline(temp_file_path, distance_threshold)
+            granularity = st.session_state.get("granularity", 2.0)
+            enqueue_pipeline(temp_file_path, granularity)
 
     # Check job status
     if "job_id" in st.session_state or "job_id" in st.query_params:
@@ -75,23 +75,32 @@ def display_sidebar():
     ### Instructions
     1. Upload a PDF file.
     2. Click on "Run Pipeline" to process the PDF.
-    3. Download the split documents using the provided links.
+    3. Download the documents using the provided links.
     """
     )
     st.sidebar.write("### Set Clustering Parameters")
+    st.sidebar.write(
+        """
+    The granularity setting controls how finely the PDF will be split into individual documents. 
+    - **Lower values** (e.g., 0.1) will result in more, smaller documents.
+    - **Higher values** (e.g., 5.0) will result in fewer, larger documents.
+    
+    Adjust the slider to find the right balance for your needs. The recommended value is 2.0, which provides a good balance for most documents.
+    """
+    )
     st.sidebar.slider(
-        "Distance Threshold",
+        "Granularity (Recommended: 2.0)",
         min_value=0.1,
         max_value=5.0,
         value=2.0,
         step=0.1,
-        key="distance_threshold",
+        key="granularity",
     )
 
 
-def enqueue_pipeline(temp_file_path, distance_threshold):
+def enqueue_pipeline(temp_file_path, granularity):
     """Enqueue the pipeline job to process the uploaded PDF file."""
-    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path, distance_threshold)
+    job = queue.enqueue("src.web.worker.run_pipeline", temp_file_path, granularity)
     st.session_state["job_id"] = job.id
     st.session_state["prev_status"] = None  # Initialize previous status
     st.success(f"Task started with job ID: {job.id}")

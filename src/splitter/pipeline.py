@@ -43,7 +43,9 @@ class Pipeline:
         page_infos = self.create_page_infos(embeddings)
 
         logger.info("Performing clustering.")
-        clusters = perform_agglomerative_clustering(embeddings, distance_threshold=self.distance_threshold)
+        clusters = perform_agglomerative_clustering(
+            embeddings, distance_threshold=self.distance_threshold
+        )
 
         documents = create_documents(page_infos, clusters)
 
