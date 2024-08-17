@@ -28,6 +28,8 @@ def run_pipeline(file_key, distance_threshold):
     try:
         output_files = pipeline.run()
     except Exception as e:
+        logger.error(f"Pipeline failed: {e}")
+        logger.error(f"logging contents of data/ dir below:\n")
         # Log the contents of the data directory
         data_directory = "data"
         if os.path.exists(data_directory):
@@ -36,7 +38,6 @@ def run_pipeline(file_key, distance_threshold):
                     logger.info(f"File: {os.path.join(root, name)}")
                 for name in dirs:
                     logger.info(f"Directory: {os.path.join(root, name)}")
-        logger.error(f"Pipeline failed: {e}")
         raise
 
     # Delete the file from Redis after successful run
