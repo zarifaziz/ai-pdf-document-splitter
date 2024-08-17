@@ -1,8 +1,12 @@
 import streamlit as st
-from src.splitter.pipeline import Pipeline
-from src.splitter.settings import settings
+import redis
+from rq import Queue
 import os
 import time
+
+# Connect to Redis
+redis_conn = redis.Redis(host='localhost', port=6379)
+queue = Queue(connection=redis_conn)
 
 def main():
     st.set_page_config(page_title="AI Automated PDF Splitter", layout="wide")
@@ -18,7 +22,6 @@ def main():
     uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
     if uploaded_file is not None:
-
         # Ensure the directory exists
         temp_dir = "data/input_pdf"
         if not os.path.exists(temp_dir):
@@ -35,29 +38,38 @@ def main():
             return
 
         if st.button("Run Pipeline"):
-            st.info("Running the pipeline to extract text, generate embeddings, and cluster documents.")
-            st.info("This may take a few minutes, please wait...")
-            progress_bar = st.progress(0)
-            
-            pipeline = Pipeline(temp_file_path)
-            output_files = pipeline.run()
-            
-            for i in range(100):
-                time.sleep(0.01)
-                progress_bar.progress(i + 1)
+            st.info("Enqueuing the pipeline task.")
+            job = queue.enqueue('worker.run_pipeline', temp_file_path)
+            st.session_state['job_id'] = job.id
+            st.success(f"Task started with job ID: {job.id}")
+            st.experimental_set_query_params(job_id=job.id)
 
-            st.success("Pipeline executed successfully! The PDF has been split into individual documents.")
-
-            # Display and provide download links for the output documents
-            for output_file in output_files:
-                st.write(f"Document: {os.path.basename(output_file)}")
-                with open(output_file, "rb") as f:
-                    st.download_button(
-                        label="Download",
-                        data=f,
-                        file_name=os.path.basename(output_file),
-                        mime="application/pdf",
-                    )
+    # Check job status
+    if 'job_id' in st.session_state or 'job_id' in st.experimental_get_query_params():
+        job_id = st.session_state.get('job_id') or st.experimental_get_query_params().get('job_id')
+        job = queue.fetch_job(job_id)
+        if job:
+            st.write(f"Job Status: {job.get_status()}")
+            if job.is_finished:
+                st.write("Pipeline executed successfully! The PDF has been split into individual documents.")
+                output_files = job.result
+                # Display and provide download links for the output documents
+                for output_file in output_files:
+                    st.write(f"Document: {os.path.basename(output_file)}")
+                    with open(output_file, "rb") as f:
+                        st.download_button(
+                            label="Download",
+                            data=f,
+                            file_name=os.path.basename(output_file),
+                            mime="application/pdf",
+                        )
+                del st.session_state['job_id']
+                st.experimental_set_query_params()
+            else:
+                time.sleep(5)  # Wait for 5 seconds before rerunning
+                st.experimental_set_query_params(job_id=job_id)
+        else:
+            st.error("Job not found")
 
 if __name__ == "__main__":
     main()
