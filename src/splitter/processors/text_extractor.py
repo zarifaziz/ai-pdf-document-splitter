@@ -7,7 +7,7 @@ from typing import List
 import cv2
 import numpy as np
 import pytesseract
-pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
+pytesseract.pytesseract.tesseract_cmd = '/app/vendor/tesseract-ocr/bin/tesseract'
 from pdf2image import convert_from_path
 
 from ..settings import settings
