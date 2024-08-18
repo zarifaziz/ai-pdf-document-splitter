@@ -249,7 +249,9 @@ The function responsible for assigning these topics to documents is `assign_topi
 If I had unlimited time and resources, future improvements could include:
 
 ### Document Splitting Quality Improvements
-- **Improving Embeddings**: Exploring multimodal embedding models to capture more information from the PDF pages 
+- **Improving Embeddings**: Exploring multimodal embedding models to capture more information from the PDF pages.
+- **Explore Unstructured for PDF Document Understanding**: Utilize tools like [Unstructured](https://docs.unstructured.io/open-source/core-functionality/partitioning) to better understand and partition PDF documents, enhancing the quality of document splitting.
+- **Research Instruct Embeddings**: Investigate the use of instruct embeddings where the model can be instructed to “embed these legal documents for retrieval,” improving the relevance and accuracy of the embeddings.
 - **Research Document Splitting Algorithms**: Explore more sophisticated document boundary detection algorithms and compare with clustering. In this project, I did explore a boundary detection algorithm based on embeddings, which can be found in the [`perform_boundary_detection_clustering`](src/splitter/ml_models/clustering.py#L65) function, however the results were inferior to hierarchical clustering.
 - **Research LLM Reasoning Capability for Document Splitting**: Investigate the potential of leveraging large language models (LLMs) like GPT-4 for enhancing document splitting accuracy. This could involve using LLMs to understand the context and semantics of the document content, thereby making more informed decisions about where to split documents. Additionally, explore the integration of LLMs with existing clustering algorithms to improve the coherence and relevance of the split sections. This research could also include fine-tuning LLMs on domain-specific data to better capture the nuances and specific requirements of different document types.
 
