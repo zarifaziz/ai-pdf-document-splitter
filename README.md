@@ -100,13 +100,7 @@ When deployed on Heroku, it reads the following files in addition
    - **Database**: Locally stores intermediate and output files for MVP.
    - **Monitoring**: Papertrail for monitoring.
 
-### Current Deployment Details
-
-- The web node and worker nodes are currently running on the same server.
-- We can easily decouple them by implementing a Cloud Storage solution for intermediate files.
-- No dedicated API Gateway; the Streamlit app handles incoming requests and is deployed on Heroku.
-
-### Flowchart
+### Flowchart and Tech Stack
 
 ```mermaid
 graph TD
@@ -148,7 +142,6 @@ graph TD
     subgraph Code Repository
         Q[GitHub] -->|Deploys to| O
     end
-
 ```
 
 ### Sequence Diagram
@@ -196,12 +189,14 @@ We use `pypdf` to **split the PDF by page**, enabling parallel processing and a 
 
 ### 2. Document Understanding
 
-Part 1: Text Extraction.
+**Part 1: Text Extraction**
+
 Both of these processes are executed using parallel processing on the per-page splits of the PDF, as detailed in `text_extractor.py`.
 - **Converting PDF pages to images**: We use `pdf2image` to convert the individual PDFs to images.
 - **OCR to extract text from images**: We use Google Vision API to extract text from the images. This can also be achieved with `pytesseract OCR` locally, however, it was unable to work during deployment on Heroku so we switched to an out of the box solution.
 
-Part 2: Batch embedding generation
+**Part 2: Batch embedding generation**
+
 - **Generating embeddings from text** Embeddings are generated from the extracted text using OpenAI's embedding model in "batch" mode as all the text files are converted in one request. This off-the-shelf model provides good general performance. 
 
 ![Embedding Quality Visualization](docs/embedding_quality.png)
@@ -253,17 +248,23 @@ The function responsible for assigning these topics to documents is `assign_topi
 
 If I had unlimited time and resources, future improvements could include:
 
-### Splitting Quality Improvements
+### Document Splitting Quality Improvements
 - **Improving Embeddings**: Exploring multimodal embedding models to capture more information from the PDF pages 
-- **Research Document Splitting Algorithms**: Explore more sophisticated document boundary detection and compare with clustering
+- **Research Document Splitting Algorithms**: Explore more sophisticated document boundary detection algorithms and compare with clustering. In this project, I did explore a boundary detection algorithm based on embeddings, which can be found in the [`perform_boundary_detection_clustering`](src/splitter/ml_models/clustering.py#L65) function, however the results were inferior to hierarchical clustering.
+- **Research LLM Reasoning Capability for Document Splitting**: Investigate the potential of leveraging large language models (LLMs) like GPT-4 for enhancing document splitting accuracy. This could involve using LLMs to understand the context and semantics of the document content, thereby making more informed decisions about where to split documents. Additionally, explore the integration of LLMs with existing clustering algorithms to improve the coherence and relevance of the split sections. This research could also include fine-tuning LLMs on domain-specific data to better capture the nuances and specific requirements of different document types.
 
-### App improvements
+### App Improvements
 - **Customer UI/UX**: Explore dendograph in the UI or some way for the user to visualise and understand the splitting process that's taking place. This would allow the user to use their domain knowledge to improve the split of the documents.
 - **Enable Multi user App**: Authentication + Authorization + Session management in the app so that multiple users can use it
 
-### Scale improvements
+### Scale Improvements
 - **Data Persistence**: Store intermediate and output documents externally such as Amazon S3. This decreases memory requirements of workers and allows the web nodes and worker nodes to scale independently as they don't share any memory or files in the ephemeral file system of the server.
 - **Horizontal Scaling for Worker Nodes**: Add a load balancer and auto-scaling to increase the number of worker nodes based on the number of tasks in the message queue. This will enable the app to handle high workloads by dynamically adjusting the processing capacity, ensuring timely task completion and efficient resource utilization.
 - **Horizontal Scaling for Web Nodes**: Implement auto-scaling for web nodes to handle varying user traffic. By scaling the web nodes horizontally, the application can maintain high availability and responsiveness during peak usage times, providing a better user experience and reducing latency.
 - **Cacheing**: Adding a cacheing layer for a user so that the same input PDF doesn't have to be reprocessed
 - **Vector Database**: Storing embeddings in a vector database, managing a separate collection/index per user
+
+## Additional Improvements
+- **Integration with Cloud Services**: Integrate with cloud services like AWS Lambda for serverless processing, and use managed services for databases, storage, and machine learning models.
+- **Continuous Integration/Continuous Deployment (CI/CD)**: Set up CI/CD pipelines to automate testing, building, and deployment of the application.
+- **Software Quality Improvements**: Apply Domain-Driven Design (DDD) and Dependency Inversion to separate the repository, domain, and service layers. This will facilitate easy swapping of cloud providers for storage, embeddings, etc.
